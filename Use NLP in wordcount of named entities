@@ -1,0 +1,6 @@
+//Section1: Question 1: uploading text file from Gutenberg Project
+
+val text=sc.textFile("/FileStore/tables/1260_0-2.txt")
+
+ 
+
