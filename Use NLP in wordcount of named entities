@@ -1,9 +1,11 @@
-//Section1: Question 1: uploading text file from Gutenberg Project
+//This project will compute the word frequency for the named entities in large text file. To compute the word frequency, a NLP library called John Snows Labs will be introduced.
+
+
+//Uploading text file from Gutenberg Project
 
 val text=sc.textFile("/FileStore/tables/1260_0-2.txt")
 
-
-//Question 2: Extract name entities in the text file
+//Extract name entities in the text file
 //Install John Snows Labs NLP
 //Check the Spark and NLP's version
 
@@ -17,6 +19,47 @@ import com.johnsnowlabs.nlp.annotator._
 val words=text.flatMap(line=>line.split("""\W+"""))
 val longWords=words.filter(x=>x.length>=1)
 val longWordsframe=longWords.toDF("text")
+
+//Extract name entities bu using NLP pineline
+import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
+import com.johnsnowlabs.nlp.SparkNLP
+import com.johnsnowlabs.nlp.pretrained.PretrainedPipeline
+import com.johnsnowlabs.nlp.SparkNLP
+
+val pipeline = PretrainedPipeline("recognize_entities_dl", lang="en")
+val annotation = pipeline.transform(longWordsframe)
+val nameEntities=annotation.select("entities.result")
+
+//display the list of name entities, there are empty rows in it
+nameEntities.collect()
+
+//Remove the empty rows in named entities rdd by using filter
+import org.apache.spark.sql.functions._
+val resultOfnameEntities=nameEntities.filter((size($"result")>0))
+
+//Named entities are extracted after removing the empty rows in nameEntities
+//Show the list of named entities
+resultOfnameEntities.toDF("language")
+resultOfnameEntities.show()
+
+//Use map reduce function to output the named entities and their counts
+//Convert named entites data frame into rdd
+val counts1=resultOfnameEntities.select("result").as[Array[String]].rdd
+
+//Show named entities and their counts in (key,value) forms
+val counts=counts1.map(x=>x(0)).map(x=>(x,1)).reduceByKey((x,y)=>x+y)
+counts.collect()
+
+//Reducer sorted in descending order of count
+//Convert the counts rdd into data frame
+val countsframe = counts.toDF("word","count")
+
+//Sorting in descending order
+countsframe.orderBy(desc("_2")).show()
+
+ 
+
+ 
 
   
 
