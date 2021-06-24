@@ -2,5 +2,21 @@
 
 val text=sc.textFile("/FileStore/tables/1260_0-2.txt")
 
- 
+
+//Question 2: Extract name entities in the text file
+//Install John Snows Labs NLP
+//Check the Spark and NLP's version
+
+spark.version
+import com.johnsnowlabs.nlp.SparkNLP
+//Import NLP packages
+import com.johnsnowlabs.nlp.base._
+import com.johnsnowlabs.nlp.annotator._
+
+//Filter the vocabularies with less than 1 character
+val words=text.flatMap(line=>line.split("""\W+"""))
+val longWords=words.filter(x=>x.length>=1)
+val longWordsframe=longWords.toDF("text")
+
+  
 
